@@ -9,6 +9,13 @@ import { getGlobalData } from '../utils/global-data';
 import SEO from '../components/SEO';
 
 export default function Index({ posts, globalData }) {
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+
   return (
     <Layout>
       <SEO title={globalData.name} description={globalData.blogTitle} />
@@ -23,14 +30,11 @@ export default function Index({ posts, globalData }) {
               key={post.id}
               className="md:first:rounded-t-lg md:last:rounded-b-lg backdrop-blur-lg bg-white dark:bg-black dark:bg-opacity-30 bg-opacity-10 hover:bg-opacity-20 dark:hover:bg-opacity-50 transition border border-gray-800 dark:border-white border-opacity-10 dark:border-opacity-10 border-b-0 last:border-b hover:border-b hovered-sibling:border-t-0"
             >
-              <Link
-                as={`/posts/${post.id}`}
-                href={`/posts/${post.id}`}
-              >
+              <Link as={`/posts/${post.id}`} href={`/posts/${post.id}`} passHref>
                 <a className="py-6 lg:py-10 px-6 lg:px-16 block focus:outline-none focus:ring-4">
-                  {post.created_ate && (
+                  {post.created_at && (
                     <p className="uppercase mb-3 font-bold opacity-60">
-                      {post.created_at}
+                      {formatDate(post.created_at)}
                     </p>
                   )}
                   <h2 className="text-2xl md:text-3xl">{post.title}</h2>
@@ -60,9 +64,15 @@ export default function Index({ posts, globalData }) {
 }
 
 export async function getServerSideProps() {
-  const posts = await getPosts();
-  const globalData = getGlobalData()
+  let posts = [];
+  let globalData = {};
 
+  try {
+    posts = await getPosts();
+    globalData = getGlobalData();
+  } catch (error) {
+    console.error('Erro ao buscar os dados:', error);
+  }
 
   return { props: { posts, globalData } };
 }
